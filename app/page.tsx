@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { Entry, EntryType } from '@/types';
 import EntryColumn from '@/components/entries/EntryColumn';
 import AddEntryModal from '@/components/entries/AddEntryModal';
+import ColorPicker from '@/components/ui/ColorPicker';
+import SearchBar from '@/components/ui/SearchBar';
 
 export default function Home() {
   const [entries, setEntries] = useState<Entry[]>([]);
@@ -89,16 +91,20 @@ export default function Home() {
           <span style={{ color: '#e8e6e0' }}>dashboard</span>
           <span style={{ cursor: 'pointer' }}>stats</span>
         </nav>
-        <button
-          onClick={() => setShowModal(true)}
-          style={{
-            background: '#c084fc', border: 'none', borderRadius: '6px',
-            padding: '7px 14px', color: '#0d0d0f', fontWeight: 500,
-            fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit',
-          }}
-        >
-          + add entry
-        </button>
+        <SearchBar />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <ColorPicker />
+          <button
+            onClick={() => setShowModal(true)}
+            style={{
+              background: '#c084fc', border: 'none', borderRadius: '6px',
+              padding: '7px 14px', color: '#0d0d0f', fontWeight: 500,
+              fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit',
+            }}
+          >
+            + add entry
+          </button>
+        </div>
       </div>
 
       {/* stats bar */}

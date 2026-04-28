@@ -1,6 +1,7 @@
 'use client';
 
 import { Entry } from '@/types';
+import { useRouter } from 'next/navigation';
 
 interface Props {
   entry: Entry;
@@ -31,6 +32,7 @@ export default function EntryCard({ entry, onProgressUpdate, onDelete }: Props) 
   const isConsuming = entry.status === 'watching' || entry.status === 'reading' || entry.status === 'rewatching';
   const isPlanning = entry.status === 'plan_to_watch';
   const progressLabel = entry.type === 'anime' ? 'ep' : 'ch';
+  const router = useRouter();
 
   return (
     <div style={{
@@ -44,6 +46,7 @@ export default function EntryCard({ entry, onProgressUpdate, onDelete }: Props) 
       gap: '10px',
       transition: 'border-color 0.2s',
     }}
+      onClick={() => router.push(`/title/${encodeURIComponent(entry.title)}?type=${entry.type}`)}
       onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(192,132,252,0.25)')}
       onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)')}
     >
@@ -70,12 +73,19 @@ export default function EntryCard({ entry, onProgressUpdate, onDelete }: Props) 
           {entry.title}
         </div>
 
+        {entry.season && (
+                  <div style={{ fontSize: '10px', color: 'rgba(232,230,224,0.4)', marginBottom: '2px' }}>
+                    {entry.season}
+                  </div>
+                )}
+
         {entry.status === 'rewatching' && entry.rewatch_count > 0 && (
           <div style={{ fontSize: '10px', color: '#a855f7', marginBottom: '2px' }}>
             rewatch #{entry.rewatch_count}
           </div>
         )}
 
+        
         {isConsuming && (
   <>
     {progressPercent !== null && (
@@ -122,7 +132,7 @@ export default function EntryCard({ entry, onProgressUpdate, onDelete }: Props) 
 
       {isConsuming && (
         <button
-          onClick={() => onProgressUpdate(entry.id, entry.current_progress + 1)}
+          onClick={(e) => { e.stopPropagation(); onProgressUpdate(entry.id, entry.current_progress + 1); }}
           style={{
             background: 'rgba(192,132,252,0.1)',
             border: '0.5px solid rgba(192,132,252,0.2)',
@@ -137,7 +147,7 @@ export default function EntryCard({ entry, onProgressUpdate, onDelete }: Props) 
       )}
 
       <button
-        onClick={() => onDelete(entry.id)}
+        onClick={(e) => { e.stopPropagation(); onDelete(entry.id); }}
         style={{
           background: 'transparent', border: 'none',
           color: 'rgba(232,230,224,0.15)', fontSize: '14px',

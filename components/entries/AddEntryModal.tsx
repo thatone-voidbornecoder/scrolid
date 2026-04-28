@@ -68,6 +68,9 @@ export default function AddEntryModal({ onClose, onAdd }: Props) {
   const [selected, setSelected] = useState<SearchResult | null>(null);
   const [showDesc, setShowDesc] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [editableTitle, setEditableTitle] = useState('');
+  const [season, setSeason] = useState('');
+  const [editableTotal, setEditableTotal] = useState<number | null>(null);
 
   const handleSearch = async () => {
     if (!query.trim()) return;
@@ -93,17 +96,18 @@ export default function AddEntryModal({ onClose, onAdd }: Props) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: selected.title,
+          title: editableTitle || selected.title,
           type,
           status,
           cover_art: selected.cover_art,
           genres: selected.genres,
           description: (selected as any).description || null,
           current_progress: startingProgress,
-          total_progress: selected.total_progress || null,
+          total_progress: editableTotal || null,
           priority: status === 'plan_to_watch' ? priority : null,
           source: source || null,
           rewatch_count: 0,
+          season: season || null,
         }),
       });
       const newEntry = await res.json();
@@ -178,7 +182,7 @@ export default function AddEntryModal({ onClose, onAdd }: Props) {
             {results.map((r, i) => (
               <div
                 key={i}
-                onClick={() => setSelected(r)}
+                onClick={() => { setSelected(r); setEditableTitle(r.title); setEditableTotal(r.total_progress || null); }}
                 style={{
                   display: 'flex', gap: '12px', alignItems: 'center',
                   background: '#161618', border: '0.5px solid rgba(255,255,255,0.06)',
@@ -211,7 +215,54 @@ export default function AddEntryModal({ onClose, onAdd }: Props) {
               <img src={selected.cover_art} alt={selected.title} style={{ width: '50px', height: '70px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0 }} />
             )}
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#e8e6e0', marginBottom: '4px' }}>{selected.title}</div>
+              <input
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '0.5px solid rgba(255,255,255,0.15)',
+                  color: '#e8e6e0',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  fontFamily: 'inherit',
+                  width: '100%',
+                  outline: 'none',
+                  marginBottom: '4px',
+                  paddingBottom: '2px',
+                }}
+                value={editableTitle}
+                onChange={e => setEditableTitle(e.target.value)}
+                placeholder="edit title..."
+              />
+              <input
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '0.5px solid rgba(255,255,255,0.1)',
+                  color: 'rgba(232,230,224,0.6)',
+                  fontSize: '12px',
+                  fontFamily: 'inherit',
+                  width: '100%',
+                  outline: 'none',
+                  marginBottom: '6px',
+                  paddingBottom: '2px',
+                }}
+                value={season}
+                onChange={e => setSeason(e.target.value)}
+                placeholder="season (optional, e.g. Season 2)"
+              />
+              <input
+                type="number"
+                style={{
+                  background: 'transparent', border: 'none',
+                  borderBottom: '0.5px solid rgba(255,255,255,0.1)',
+                  color: 'rgba(232,230,224,0.6)', fontSize: '12px',
+                  fontFamily: 'inherit', width: '100%', outline: 'none',
+                  marginBottom: '6px', paddingBottom: '2px',
+                }}
+                value={editableTotal || ''}
+                onChange={e => setEditableTotal(Number(e.target.value))}
+                placeholder="total episodes/chapters (optional)"
+              />
               <div style={{ fontSize: '11px', color: 'rgba(232,230,224,0.35)', marginBottom: '6px' }}>
                 {selected.genres?.slice(0, 3).join(', ')}
               </div>

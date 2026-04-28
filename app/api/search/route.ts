@@ -17,6 +17,7 @@ export async function GET(request: Request) {
         total_progress: item.episodes,
         genres: item.genres.map((g: any) => g.name),
         description: item.synopsis || null,
+        english_title: item.title_english || null,
         type: 'anime'
       }));
       return NextResponse.json(results);
@@ -30,6 +31,7 @@ export async function GET(request: Request) {
         total_progress: item.chapters,
         genres: item.genres.map((g: any) => g.name),
         description: item.synopsis || null,
+        english_title: item.title_english || null,
         type: type
       }));
       return NextResponse.json(results);
