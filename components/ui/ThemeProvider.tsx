@@ -8,7 +8,7 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  accentColor: '#c084fc',
+  accentColor: 'var(--accent)',
   setAccentColor: () => {},
 });
 
@@ -17,7 +17,7 @@ export function useTheme() {
 }
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [accentColor, setAccentColorState] = useState('#c084fc');
+  const [accentColor, setAccentColorState] = useState('var(--accent)');
 
   useEffect(() => {
     const saved = localStorage.getItem('scrolid-accent');
@@ -25,7 +25,7 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
       setAccentColorState(saved);
       document.documentElement.style.setProperty('--accent', saved);
     } else {
-      document.documentElement.style.setProperty('--accent', '#c084fc');
+      document.documentElement.style.setProperty('--accent', 'var(--accent)');
     }
   }, []);
 

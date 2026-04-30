@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Entry, EntryType } from '@/types';
 import EntryColumn from '@/components/entries/EntryColumn';
 import AddEntryModal from '@/components/entries/AddEntryModal';
@@ -12,6 +13,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [randomPick, setRandomPick] = useState<Entry | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     fetchEntries();
@@ -55,20 +57,30 @@ export default function Home() {
     setEntries(prev => [newEntry, ...prev]);
   };
 
-  const handleRandomPick = (type: EntryType) => {
-    const pool = entries.filter(e => e.type === type && e.status === 'plan_to_watch');
-    if (pool.length === 0) return;
-    const pick = pool[Math.floor(Math.random() * pool.length)];
-    setRandomPick(pick);
+  const handleRandomPick = (type: EntryType, mode: 'plan' | 'active') => {
+  const pool = entries.filter(e => {
+    if (e.type !== type) return false;
+    if (mode === 'plan') return e.status === 'plan_to_watch';
+    if (mode === 'active') return ['watching', 'reading', 'rewatching', 'caught_up', 'rereading'].includes(e.status);
+    return false;
+  });
+  if (pool.length === 0) return;
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  setRandomPick(pick);
   };
 
   const activeEntries = entries.filter(e =>
-    ['watching', 'reading', 'rewatching', 'caught_up'].includes(e.status)
+    ['watching', 'reading', 'rewatching', 'caught_up', 'rereading'].includes(e.status)
   );
 
   const totalCompleted = entries.filter(e => e.status === 'completed').length;
-  const totalEpisodes = entries.filter(e => e.type === 'anime').reduce((sum, e) => sum + e.current_progress, 0);
-  const totalChapters = entries.filter(e => e.type !== 'anime').reduce((sum, e) => sum + e.current_progress, 0);
+  const totalEpisodes = entries
+  .filter(e => e.type === 'anime')
+  .reduce((sum, e) => sum + (e.status === 'completed' && e.total_progress ? e.total_progress : e.current_progress), 0);
+
+  const totalChapters = entries
+  .filter(e => e.type !== 'anime')
+  .reduce((sum, e) => sum + (e.status === 'completed' && e.total_progress ? e.total_progress : e.current_progress), 0);
 
   const byType = (type: EntryType) => entries.filter(e => e.type === type);
 
@@ -85,11 +97,11 @@ export default function Home() {
         padding: '18px 32px', borderBottom: '0.5px solid rgba(255,255,255,0.08)',
       }}>
         <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '20px', letterSpacing: '-0.5px' }}>
-          scro<span style={{ color: '#c084fc' }}>lid</span>
+          scro<span style={{ color: 'var(--accent)' }}>lid</span>
         </div>
         <nav style={{ display: 'flex', gap: '24px', fontSize: '13px', color: 'rgba(232,230,224,0.45)' }}>
           <span style={{ color: '#e8e6e0' }}>dashboard</span>
-          <span style={{ cursor: 'pointer' }}>stats</span>
+          <span onClick={() => router.push('/stats')} style={{ cursor: 'pointer' }}>stats</span>
         </nav>
         <SearchBar />
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -97,7 +109,7 @@ export default function Home() {
           <button
             onClick={() => setShowModal(true)}
             style={{
-              background: '#c084fc', border: 'none', borderRadius: '6px',
+              background: 'var(--accent)', border: 'none', borderRadius: '6px',
               padding: '7px 14px', color: '#0d0d0f', fontWeight: 500,
               fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit',
             }}
@@ -148,7 +160,7 @@ export default function Home() {
                     <div style={{ width: '44px', height: '60px', borderRadius: '5px', background: 'linear-gradient(135deg, #1a1035, #3b1f6e)', flexShrink: 0 }} />
                   )}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '10px', color: '#c084fc', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--accent)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       {entry.type}
                     </div>
                     <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '13px', fontWeight: 700, marginBottom: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -160,7 +172,7 @@ export default function Home() {
                     {entry.total_progress && (
                       <>
                         <div style={{ height: '3px', background: 'rgba(255,255,255,0.08)', borderRadius: '2px', marginBottom: '5px' }}>
-                          <div style={{ width: `${Math.round((entry.current_progress / entry.total_progress) * 100)}%`, height: '100%', borderRadius: '2px', background: '#c084fc', transition: 'width 0.3s ease' }} />
+                          <div style={{ width: `${Math.round((entry.current_progress / entry.total_progress) * 100)}%`, height: '100%', borderRadius: '2px', background: 'var(--accent)', transition: 'width 0.3s ease' }} />
                         </div>
                         <div style={{ fontSize: '11px', color: 'rgba(232,230,224,0.35)', display: 'flex', justifyContent: 'space-between' }}>
                           <span>{entry.type === 'anime' ? 'ep' : 'ch'} {entry.current_progress}</span>
@@ -173,7 +185,7 @@ export default function Home() {
                     onClick={() => handleProgressUpdate(entry.id, entry.current_progress + 1)}
                     style={{
                       background: 'rgba(192,132,252,0.1)', border: '0.5px solid rgba(192,132,252,0.2)',
-                      color: '#c084fc', borderRadius: '4px', width: '22px', height: '22px',
+                      color: 'var(--accent)', borderRadius: '4px', width: '22px', height: '22px',
                       fontSize: '16px', cursor: 'pointer', display: 'flex',
                       alignItems: 'center', justifyContent: 'center', flexShrink: 0, alignSelf: 'flex-start',
                     }}
@@ -243,7 +255,7 @@ export default function Home() {
             <button
               onClick={() => setRandomPick(null)}
               style={{
-                background: '#c084fc', border: 'none', borderRadius: '8px',
+                background: 'var(--accent)', border: 'none', borderRadius: '8px',
                 padding: '10px 24px', color: '#0d0d0f', fontWeight: 500,
                 fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit',
               }}

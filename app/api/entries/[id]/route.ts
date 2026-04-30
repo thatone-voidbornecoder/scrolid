@@ -5,7 +5,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, type, status, cover_art, genres, description, english_title, season, current_progress, total_progress, priority, source } = body;
+    const { title, type, status, cover_art, genres, description, english_title, season, current_progress, total_progress, priority, source, rewatch_count } = body;
 
     const result = await sql`
       UPDATE entries SET
@@ -22,6 +22,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         source = COALESCE(${source}, source),
         updated_at = now()
         season = COALESCE(${season}, season),
+        rewatch_count = COALESCE(${rewatch_count}, rewatch_count),
       WHERE id = ${id}
       RETURNING *
     `;

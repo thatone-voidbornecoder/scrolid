@@ -54,7 +54,7 @@ export default function SearchBar() {
       <button
         onClick={handleSearch}
         style={{
-          background: '#c084fc', border: 'none', borderRadius: '8px',
+          background: 'var(--accent)', border: 'none', borderRadius: '8px',
           padding: '8px 14px', color: '#0d0d0f', fontWeight: 500,
           fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit',
         }}

@@ -148,6 +148,8 @@ export default function AddEntryModal({ onClose, onAdd }: Props) {
               <option value="completed">completed</option>
               <option value="plan_to_watch">plan to watch</option>
               <option value="dropped">dropped</option>
+              <option value="caught_up">caught up</option>
+              <option value="rereading">rereading</option>
             </select>
           </div>
         </div>
@@ -165,7 +167,7 @@ export default function AddEntryModal({ onClose, onAdd }: Props) {
             <button
               onClick={handleSearch}
               style={{
-                background: '#c084fc', border: 'none', borderRadius: '8px',
+                background: 'var(--accent)', border: 'none', borderRadius: '8px',
                 padding: '10px 16px', color: '#0d0d0f', fontWeight: 500,
                 fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap',
                 fontFamily: 'inherit',
@@ -270,7 +272,7 @@ export default function AddEntryModal({ onClose, onAdd }: Props) {
                 <>
                   <div
                     onClick={() => setShowDesc(!showDesc)}
-                    style={{ fontSize: '11px', color: '#c084fc', cursor: 'pointer', marginBottom: '4px' }}
+                    style={{ fontSize: '11px', color: 'var(--accent)', cursor: 'pointer', marginBottom: '4px' }}
                   >
                     {showDesc ? 'hide description ↑' : 'show description ↓'}
                   </div>
@@ -333,7 +335,7 @@ export default function AddEntryModal({ onClose, onAdd }: Props) {
           onClick={handleAdd}
           disabled={!selected || submitting}
           style={{
-            background: selected ? '#c084fc' : 'rgba(192,132,252,0.2)',
+            background: selected ? 'var(--accent)' : 'rgba(192,132,252,0.2)',
             border: 'none', borderRadius: '8px', padding: '12px',
             color: selected ? '#0d0d0f' : 'rgba(232,230,224,0.3)',
             fontWeight: 500, fontSize: '14px', cursor: selected ? 'pointer' : 'not-allowed',

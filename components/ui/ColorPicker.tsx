@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 
 const PRESET_COLORS = [
-  { label: 'purple', value: '#c084fc' },
+  { label: 'purple', value: 'var(--accent)' },
   { label: 'blue', value: '#60a5fa' },
   { label: 'green', value: '#4ade80' },
   { label: 'red', value: '#f87171' },
@@ -14,7 +14,7 @@ const PRESET_COLORS = [
 ];
 
 export default function ColorPicker() {
-  const [accentColor, setAccentColor] = useState('#c084fc');
+  const [accentColor, setAccentColor] = useState('var(--accent)');
   const [open, setOpen] = useState(false);
 
   useEffect(() => {

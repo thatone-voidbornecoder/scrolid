@@ -10,12 +10,14 @@ interface Props {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  watching: '#c084fc',
-  reading: '#c084fc',
+  watching: 'var(--accent)',
+  reading: 'var(--accent)',
   rewatching: '#a855f7',
   completed: '#4ade80',
   plan_to_watch: 'rgba(232,230,224,0.2)',
   dropped: '#f87171',
+  rereading: '#a855f7',
+  caught_up: '#38bdf8',
 };
 
 const PRIORITY_STYLES: Record<string, { bg: string; color: string }> = {
@@ -29,7 +31,7 @@ export default function EntryCard({ entry, onProgressUpdate, onDelete }: Props) 
     ? Math.round((entry.current_progress / entry.total_progress) * 100)
     : null;
 
-  const isConsuming = entry.status === 'watching' || entry.status === 'reading' || entry.status === 'rewatching';
+  const isConsuming = entry.status === 'watching' || entry.status === 'reading' || entry.status === 'rewatching' || entry.status === 'caught_up' || entry.status === 'rereading';
   const isPlanning = entry.status === 'plan_to_watch';
   const progressLabel = entry.type === 'anime' ? 'ep' : 'ch';
   const router = useRouter();
@@ -73,6 +75,12 @@ export default function EntryCard({ entry, onProgressUpdate, onDelete }: Props) 
           {entry.title}
         </div>
 
+        {entry.format && entry.format !== 'TV' && (
+                  <div style={{ fontSize: '9px', letterSpacing: '0.05em', textTransform: 'uppercase', padding: '2px 5px', borderRadius: '3px', background: 'rgba(251,191,36,0.1)', color: '#fbbf24', display: 'inline-block', marginBottom: '2px' }}>
+                    {entry.format.replace('_', ' ')}
+                  </div>
+                )}
+
         {entry.season && (
                   <div style={{ fontSize: '10px', color: 'rgba(232,230,224,0.4)', marginBottom: '2px' }}>
                     {entry.season}
@@ -95,7 +103,7 @@ export default function EntryCard({ entry, onProgressUpdate, onDelete }: Props) 
       }}>
         <div style={{
           width: `${progressPercent}%`, height: '100%',
-          borderRadius: '2px', background: '#c084fc',
+          borderRadius: '2px', background: 'var(--accent)',
           transition: 'width 0.3s ease'
         }} />
       </div>
@@ -136,7 +144,7 @@ export default function EntryCard({ entry, onProgressUpdate, onDelete }: Props) 
           style={{
             background: 'rgba(192,132,252,0.1)',
             border: '0.5px solid rgba(192,132,252,0.2)',
-            color: '#c084fc', borderRadius: '4px',
+            color: 'var(--accent)', borderRadius: '4px',
             width: '22px', height: '22px', fontSize: '16px',
             cursor: 'pointer', display: 'flex',
             alignItems: 'center', justifyContent: 'center', flexShrink: 0,

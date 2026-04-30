@@ -81,7 +81,7 @@ export default function TitlePage({ params }: { params: Promise<{ id: string }> 
   };
 
   const STATUS_COLOR: Record<string, string> = {
-    watching: '#c084fc', reading: '#c084fc', rewatching: '#a855f7',
+    watching: 'var(--accent)', reading: 'var(--accent)', rewatching: '#a855f7',
     completed: '#4ade80', plan_to_watch: 'rgba(232,230,224,0.3)',
     dropped: '#f87171', caught_up: '#38bdf8',
   };
@@ -95,8 +95,8 @@ export default function TitlePage({ params }: { params: Promise<{ id: string }> 
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '18px 32px', borderBottom: '0.5px solid rgba(255,255,255,0.08)',
       }}>
-        <div onClick={() => router.push('/')} style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '20px', letterSpacing: '-0.5px', cursor: 'pointer' }}>
-          scro<span style={{ color: '#c084fc' }}>lid</span>
+        <div onClick={() => router.push('/dashboard')} style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '20px', letterSpacing: '-0.5px', cursor: 'pointer' }}>
+          scro<span style={{ color: 'var(--accent)' }}>lid</span>
         </div>
         <button
           onClick={() => router.back()}
@@ -127,7 +127,7 @@ export default function TitlePage({ params }: { params: Promise<{ id: string }> 
 
           {/* info */}
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '11px', color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
+            <div style={{ fontSize: '11px', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
               {type}
             </div>
             <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '28px', fontWeight: 800, lineHeight: 1.2, marginBottom: '8px' }}>
@@ -145,7 +145,7 @@ export default function TitlePage({ params }: { params: Promise<{ id: string }> 
                 {data.genres.map((g: string) => (
                   <span key={g} style={{
                     fontSize: '11px', padding: '3px 8px', borderRadius: '4px',
-                    background: 'rgba(192,132,252,0.1)', color: '#c084fc',
+                    background: 'rgba(192,132,252,0.1)', color: 'var(--accent)',
                     border: '0.5px solid rgba(192,132,252,0.2)',
                   }}>{g}</span>
                 ))}
@@ -192,12 +192,14 @@ export default function TitlePage({ params }: { params: Promise<{ id: string }> 
                   <option value="plan_to_watch">plan to watch</option>
                   <option value="completed">completed</option>
                   <option value="dropped">dropped</option>
+                  <option value="caught_up">caught up</option>
+                  <option value="rereading">rereading</option>
                 </select>
                 <button
                   onClick={handleAdd}
                   disabled={adding}
                   style={{
-                    background: '#c084fc', border: 'none', borderRadius: '8px',
+                    background: 'var(--accent)', border: 'none', borderRadius: '8px',
                     padding: '8px 16px', color: '#0d0d0f', fontWeight: 500,
                     fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit',
                   }}
@@ -219,7 +221,7 @@ export default function TitlePage({ params }: { params: Promise<{ id: string }> 
               <button
                 onClick={() => setShowAdd(true)}
                 style={{
-                  background: '#c084fc', border: 'none', borderRadius: '8px',
+                  background: 'var(--accent)', border: 'none', borderRadius: '8px',
                   padding: '10px 20px', color: '#0d0d0f', fontWeight: 500,
                   fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit',
                   marginBottom: '20px', display: 'block',

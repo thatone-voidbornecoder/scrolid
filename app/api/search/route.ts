@@ -8,35 +8,55 @@ export async function GET(request: Request) {
   if (!query) return NextResponse.json({ error: 'No query provided' }, { status: 400 });
 
   try {
-    if (type === 'anime') {
-      const res = await fetch(`https://api.jikan.moe/v4/anime?q=${query}&limit=6`);
-      const data = await res.json();
-      const results = data.data.map((item: any) => ({
-        title: item.title,
-        cover_art: item.images.jpg.large_image_url,
-        total_progress: item.episodes,
-        genres: item.genres.map((g: any) => g.name),
-        description: item.synopsis || null,
-        english_title: item.title_english || null,
-        type: 'anime'
-      }));
-      return NextResponse.json(results);
+    const mediaType = type === 'anime' ? 'ANIME' : 'MANGA';
 
-    } else {
-      const res = await fetch(`https://api.jikan.moe/v4/manga?q=${query}&limit=6`);
-      const data = await res.json();
-      const results = data.data.map((item: any) => ({
-        title: item.title,
-        cover_art: item.images.jpg.large_image_url,
-        total_progress: item.chapters,
-        genres: item.genres.map((g: any) => g.name),
-        description: item.synopsis || null,
-        english_title: item.title_english || null,
-        type: type
-      }));
-      return NextResponse.json(results);
+    const graphqlQuery = `
+      query ($search: String, $type: MediaType) {
+        Page(perPage: 6) {
+          media(search: $search, type: $type) {
+            title {
+              romaji
+              english
+            }
+            coverImage {
+              large
+            }
+            episodes
+            chapters
+            genres
+            description(asHtml: false)
+            type
+          }
+        }
+      }
+    `;
+
+    const res = await fetch('https://graphql.anilist.co', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: graphqlQuery, variables: { search: query, type: mediaType } }),
+    });
+
+    const data = await res.json();
+    const media = data?.data?.Page?.media;
+
+    if (!media || !Array.isArray(media)) {
+      return NextResponse.json({ error: 'AniList API error', details: data }, { status: 500 });
     }
+
+    const results = media.map((item: any) => ({
+      title: item.title.romaji,
+      english_title: item.title.english || null,
+      cover_art: item.coverImage?.large || null,
+      total_progress: type === 'anime' ? item.episodes : item.chapters,
+      genres: item.genres || [],
+      description: item.description || null,
+      type: type,
+    }));
+
+    return NextResponse.json(results);
   } catch (error) {
-    return NextResponse.json({ error: 'Search failed' }, { status: 500 });
+    console.error('Search error:', error);
+    return NextResponse.json({ error: 'Search failed', details: String(error) }, { status: 500 });
   }
 }

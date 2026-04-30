@@ -8,7 +8,7 @@ interface Props {
   entries: Entry[];
   onProgressUpdate: (id: string, newProgress: number) => void;
   onDelete: (id: string) => void;
-  onRandomPick: (type: EntryType) => void;
+  onRandomPick: (type: EntryType, mode: 'plan' | 'active') => void;
 }
 
 export default function EntryColumn({ type, entries, onProgressUpdate, onDelete, onRandomPick }: Props) {
@@ -49,31 +49,58 @@ export default function EntryColumn({ type, entries, onProgressUpdate, onDelete,
         </div>
       )}
 
+      <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
       {planToWatch.length > 0 && (
         <button
-          onClick={() => onRandomPick(type)}
+          onClick={() => onRandomPick(type, 'plan')}
           style={{
             background: '#161618',
             border: '0.5px solid rgba(255,255,255,0.1)',
             borderRadius: '8px', padding: '10px 16px',
             color: 'rgba(232,230,224,0.5)',
             fontFamily: 'sans-serif', fontSize: '12px',
-            cursor: 'pointer', width: '100%',
-            textAlign: 'center', marginTop: '4px',
+            cursor: 'pointer', flex: 1,
+            textAlign: 'center',
             transition: 'all 0.2s',
           }}
           onMouseEnter={e => {
             e.currentTarget.style.borderColor = 'rgba(192,132,252,0.3)';
-            e.currentTarget.style.color = '#c084fc';
+            e.currentTarget.style.color = 'var(--accent)';
           }}
           onMouseLeave={e => {
             e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
             e.currentTarget.style.color = 'rgba(232,230,224,0.5)';
           }}
         >
-          🎲 random pick
+          🎲 next up
         </button>
-      )}
+     )}
+      {active.length > 1 && (
+        <button
+          onClick={() => onRandomPick(type, 'active')}
+          style={{
+            background: '#161618',
+            border: '0.5px solid rgba(255,255,255,0.1)',
+            borderRadius: '8px', padding: '10px 16px',
+            color: 'rgba(232,230,224,0.5)',
+            fontFamily: 'sans-serif', fontSize: '12px',
+            cursor: 'pointer', flex: 1,
+            textAlign: 'center',
+            transition: 'all 0.2s',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.borderColor = 'rgba(192,132,252,0.3)';
+            e.currentTarget.style.color = 'var(--accent)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+            e.currentTarget.style.color = 'rgba(232,230,224,0.5)';
+          }}
+        >
+          🎲 what now
+        </button>
+  )}
+</div>
     </div>
   );
 }
