@@ -18,12 +18,14 @@ export default function ColorPicker() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('scrolid-accent');
-    if (saved) {
-      setAccentColor(saved);
-      document.documentElement.style.setProperty('--accent', saved);
-    }
-  }, []);
+  const saved = localStorage.getItem('scrolid-accent');
+  if (saved) {
+    setAccentColor(saved);
+    document.documentElement.style.setProperty('--accent', saved);
+  } else {
+    document.documentElement.style.setProperty('--accent', '#c084fc');
+  }
+}, []);
 
   const handleColorChange = (color: string) => {
     setAccentColor(color);
