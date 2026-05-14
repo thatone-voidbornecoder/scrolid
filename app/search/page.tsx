@@ -1,10 +1,11 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { SearchResult, EntryType } from '@/types';
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const query = searchParams.get('q') || '';
@@ -113,5 +114,16 @@ export default function SearchPage() {
         )}
       </div>
     </main>
+  );
+}
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <main style={{ background: '#0d0d0f', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: 'rgba(232,230,224,0.3)', fontSize: '13px' }}>loading...</div>
+      </main>
+    }>
+      <SearchContent />
+    </Suspense>
   );
 }
