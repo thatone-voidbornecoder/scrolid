@@ -6,7 +6,11 @@ export type EntryStatus =
   | 'completed' 
   | 'plan_to_watch' 
   | 'dropped'
-  | 'rewatching';
+  | 'rewatching'
+  | 'rereading'
+  | 'caught_up'
+  | 'plan_to_read';
+
 
 export type Priority = 'high' | 'medium' | 'low';
 
@@ -26,6 +30,9 @@ export interface Entry {
   updated_at: string;
   rewatch_count: number;
   description?: string;
+  season?: string;
+  duration?: number;
+  format?: string;
 }
 
 export interface SearchResult {

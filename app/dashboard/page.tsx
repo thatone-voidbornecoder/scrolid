@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Entry, EntryType } from '@/types';
+import { signOut, useSession } from 'next-auth/react';
 import EntryColumn from '@/components/entries/EntryColumn';
 import AddEntryModal from '@/components/entries/AddEntryModal';
 import ColorPicker from '@/components/ui/ColorPicker';
 import SearchBar from '@/components/ui/SearchBar';
+import ProfileDropdown from '@/components/ui/ProfileDropdown';
 
 export default function Home() {
   const [entries, setEntries] = useState<Entry[]>([]);
@@ -14,35 +16,48 @@ export default function Home() {
   const [showModal, setShowModal] = useState(false);
   const [randomPick, setRandomPick] = useState<Entry | null>(null);
   const router = useRouter();
+  const { data: session } = useSession();
+  const [sortBy, setSortBy] = useState<'default' | 'alphabetical' | 'recent' | 'progress'>('default');
 
   useEffect(() => {
     fetchEntries();
   }, []);
 
   const fetchEntries = async () => {
-    try {
-      const res = await fetch('/api/entries');
-      const data = await res.json();
-      setEntries(data);
-    } catch (error) {
-      console.error('Failed to fetch entries');
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    const res = await fetch('/api/entries');
+    const data = await res.json();
+    setEntries(Array.isArray(data) ? data : []);
+  } catch (error) {
+    console.error('Failed to fetch entries');
+    setEntries([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const handleProgressUpdate = async (id: string, newProgress: number) => {
-    try {
-      await fetch(`/api/entries/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ current_progress: newProgress }),
-      });
-      setEntries(prev => prev.map(e => e.id === id ? { ...e, current_progress: newProgress } : e));
-    } catch {
-      console.error('Failed to update progress');
-    }
-  };
+const handleProgressUpdate = async (id: string, newProgress: number) => {
+  try {
+    const entry = entries.find(e => e.id === id);
+    const isComplete = entry?.total_progress && newProgress >= entry.total_progress;
+    
+    await fetch(`/api/entries/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        current_progress: newProgress,
+        status: isComplete ? 'completed' : undefined,
+      }),
+    });
+    setEntries(prev => prev.map(e => e.id === id ? { 
+      ...e, 
+      current_progress: newProgress,
+      status: isComplete ? 'completed' : e.status,
+    } : e));
+  } catch {
+    console.error('Failed to update progress');
+  }
+};
 
   const handleDelete = async (id: string) => {
     try {
@@ -106,6 +121,7 @@ export default function Home() {
         <SearchBar />
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <ColorPicker />
+          
           <button
             onClick={() => setShowModal(true)}
             style={{
@@ -116,6 +132,7 @@ export default function Home() {
           >
             + add entry
           </button>
+          <ProfileDropdown name={session?.user?.name} email={session?.user?.email} />
         </div>
       </div>
 
@@ -203,8 +220,24 @@ export default function Home() {
           </div>
         ) : (
           <>
-            <div style={{ fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(232,230,224,0.35)', marginBottom: '14px' }}>
-              your list
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <div style={{ fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(232,230,224,0.35)' }}>
+                your list
+              </div>
+              <select
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value as any)}
+                style={{
+                  background: '#161618', border: '0.5px solid rgba(255,255,255,0.1)',
+                  borderRadius: '6px', padding: '4px 10px', color: 'rgba(232,230,224,0.5)',
+                  fontSize: '11px', fontFamily: 'inherit', outline: 'none', cursor: 'pointer',
+                }}
+              >
+                <option value="default">default</option>
+                <option value="alphabetical">a → z</option>
+                <option value="recent">recently added</option>
+                <option value="progress">by progress</option>
+              </select>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
               {(['anime', 'manga', 'manhwa'] as EntryType[]).map(type => (
@@ -215,6 +248,7 @@ export default function Home() {
                   onProgressUpdate={handleProgressUpdate}
                   onDelete={handleDelete}
                   onRandomPick={handleRandomPick}
+                  sortBy={sortBy}
                 />
               ))}
             </div>

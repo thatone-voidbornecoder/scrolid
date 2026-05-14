@@ -18,6 +18,7 @@ const STATUS_COLORS: Record<string, string> = {
   dropped: '#f87171',
   rereading: '#a855f7',
   caught_up: '#38bdf8',
+  plan_to_read: 'rgba(232,230,224,0.2)',
 };
 
 const PRIORITY_STYLES: Record<string, { bg: string; color: string }> = {
@@ -32,7 +33,7 @@ export default function EntryCard({ entry, onProgressUpdate, onDelete }: Props) 
     : null;
 
   const isConsuming = entry.status === 'watching' || entry.status === 'reading' || entry.status === 'rewatching' || entry.status === 'caught_up' || entry.status === 'rereading';
-  const isPlanning = entry.status === 'plan_to_watch';
+  const isPlanning = entry.status === 'plan_to_watch' || entry.status === 'plan_to_read';
   const progressLabel = entry.type === 'anime' ? 'ep' : 'ch';
   const router = useRouter();
 
@@ -75,11 +76,11 @@ export default function EntryCard({ entry, onProgressUpdate, onDelete }: Props) 
           {entry.title}
         </div>
 
-        {entry.format && entry.format !== 'TV' && (
-                  <div style={{ fontSize: '9px', letterSpacing: '0.05em', textTransform: 'uppercase', padding: '2px 5px', borderRadius: '3px', background: 'rgba(251,191,36,0.1)', color: '#fbbf24', display: 'inline-block', marginBottom: '2px' }}>
-                    {entry.format.replace('_', ' ')}
-                  </div>
-                )}
+        {entry.format && !['TV', 'MANGA', 'ONE_SHOT'].includes(entry.format) && (
+          <div style={{ fontSize: '9px', letterSpacing: '0.05em', textTransform: 'uppercase', padding: '2px 5px', borderRadius: '3px', background: 'rgba(251,191,36,0.1)', color: '#fbbf24', display: 'inline-block', marginBottom: '2px' }}>
+            {entry.format.replace('_', ' ')}
+          </div>
+        )}
 
         {entry.season && (
                   <div style={{ fontSize: '10px', color: 'rgba(232,230,224,0.4)', marginBottom: '2px' }}>
@@ -140,7 +141,7 @@ export default function EntryCard({ entry, onProgressUpdate, onDelete }: Props) 
 
       {isConsuming && (
         <button
-          onClick={(e) => { e.stopPropagation(); onProgressUpdate(entry.id, entry.current_progress + 1); }}
+          onClick={(e) => { e.stopPropagation(); if (entry.total_progress && entry.current_progress >= entry.total_progress) return; onProgressUpdate(entry.id, entry.current_progress + 1); }}
           style={{
             background: 'rgba(192,132,252,0.1)',
             border: '0.5px solid rgba(192,132,252,0.2)',

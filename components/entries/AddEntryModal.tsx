@@ -141,12 +141,19 @@ export default function AddEntryModal({ onClose, onAdd }: Props) {
           </div>
           <div>
             <label style={labelStyle}>status</label>
-            <select style={selectStyle} value={status} onChange={e => setStatus(e.target.value as EntryStatus)}>
+            <select style={selectStyle} value={status} onChange={e => {
+  const newStatus = e.target.value as EntryStatus;
+  setStatus(newStatus);
+  if (newStatus === 'caught_up' && selected?.total_progress) {
+    setStartingProgress(selected.total_progress);
+  }
+}}>
               <option value="watching">watching</option>
               <option value="reading">reading</option>
               <option value="rewatching">rewatching</option>
               <option value="completed">completed</option>
               <option value="plan_to_watch">plan to watch</option>
+              <option value="plan_to_read">plan to read</option>
               <option value="dropped">dropped</option>
               <option value="caught_up">caught up</option>
               <option value="rereading">rereading</option>
@@ -296,7 +303,7 @@ export default function AddEntryModal({ onClose, onAdd }: Props) {
           </div>
         )}
 
-        {status === 'plan_to_watch' && (
+        {(status === 'plan_to_watch' || status === 'plan_to_read') && (
           <div>
             <label style={labelStyle}>priority</label>
             <select style={selectStyle} value={priority} onChange={e => setPriority(e.target.value)}>

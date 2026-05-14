@@ -26,6 +26,8 @@ export async function GET(request: Request) {
             genres
             description(asHtml: false)
             type
+            duration
+            format
           }
         }
       }
@@ -52,6 +54,8 @@ export async function GET(request: Request) {
       genres: item.genres || [],
       description: item.description || null,
       type: type,
+      duration: item.duration || null,
+      format: item.format || null,
     }));
 
     return NextResponse.json(results);
