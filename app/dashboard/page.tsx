@@ -24,40 +24,39 @@ export default function Home() {
   }, []);
 
   const fetchEntries = async () => {
-  try {
-    const res = await fetch('/api/entries');
-    const data = await res.json();
-    setEntries(Array.isArray(data) ? data : []);
-  } catch (error) {
-    console.error('Failed to fetch entries');
-    setEntries([]);
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      const res = await fetch('/api/entries');
+      const data = await res.json();
+      setEntries(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Failed to fetch entries');
+      setEntries([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const handleProgressUpdate = async (id: string, newProgress: number) => {
-  try {
-    const entry = entries.find(e => e.id === id);
-    const isComplete = entry?.total_progress && newProgress >= entry.total_progress;
-    
-    await fetch(`/api/entries/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
+  const handleProgressUpdate = async (id: string, newProgress: number) => {
+    try {
+      const entry = entries.find(e => e.id === id);
+      const isComplete = entry?.total_progress && newProgress >= entry.total_progress;
+      await fetch(`/api/entries/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          current_progress: newProgress,
+          status: isComplete ? 'completed' : undefined,
+        }),
+      });
+      setEntries(prev => prev.map(e => e.id === id ? {
+        ...e,
         current_progress: newProgress,
-        status: isComplete ? 'completed' : undefined,
-      }),
-    });
-    setEntries(prev => prev.map(e => e.id === id ? { 
-      ...e, 
-      current_progress: newProgress,
-      status: isComplete ? 'completed' : e.status,
-    } : e));
-  } catch {
-    console.error('Failed to update progress');
-  }
-};
+        status: isComplete ? 'completed' : e.status,
+      } : e));
+    } catch {
+      console.error('Failed to update progress');
+    }
+  };
 
   const handleDelete = async (id: string) => {
     try {
@@ -73,15 +72,15 @@ const handleProgressUpdate = async (id: string, newProgress: number) => {
   };
 
   const handleRandomPick = (type: EntryType, mode: 'plan' | 'active') => {
-  const pool = entries.filter(e => {
-    if (e.type !== type) return false;
-    if (mode === 'plan') return e.status === 'plan_to_watch';
-    if (mode === 'active') return ['watching', 'reading', 'rewatching', 'caught_up', 'rereading'].includes(e.status);
-    return false;
-  });
-  if (pool.length === 0) return;
-  const pick = pool[Math.floor(Math.random() * pool.length)];
-  setRandomPick(pick);
+    const pool = entries.filter(e => {
+      if (e.type !== type) return false;
+      if (mode === 'plan') return e.status === 'plan_to_watch' || e.status === 'plan_to_read';
+      if (mode === 'active') return ['watching', 'reading', 'rewatching', 'caught_up', 'rereading'].includes(e.status);
+      return false;
+    });
+    if (pool.length === 0) return;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    setRandomPick(pick);
   };
 
   const activeEntries = entries.filter(e =>
@@ -90,12 +89,11 @@ const handleProgressUpdate = async (id: string, newProgress: number) => {
 
   const totalCompleted = entries.filter(e => e.status === 'completed').length;
   const totalEpisodes = entries
-  .filter(e => e.type === 'anime')
-  .reduce((sum, e) => sum + (e.status === 'completed' && e.total_progress ? e.total_progress : e.current_progress), 0);
-
+    .filter(e => e.type === 'anime')
+    .reduce((sum, e) => sum + (e.status === 'completed' && e.total_progress ? e.total_progress : e.current_progress), 0);
   const totalChapters = entries
-  .filter(e => e.type !== 'anime')
-  .reduce((sum, e) => sum + (e.status === 'completed' && e.total_progress ? e.total_progress : e.current_progress), 0);
+    .filter(e => e.type !== 'anime')
+    .reduce((sum, e) => sum + (e.status === 'completed' && e.total_progress ? e.total_progress : e.current_progress), 0);
 
   const byType = (type: EntryType) => entries.filter(e => e.type === type);
 
@@ -106,66 +104,171 @@ const handleProgressUpdate = async (id: string, newProgress: number) => {
     }}>
       <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
 
+      <style>{`
+              .topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  border-bottom: 0.5px solid rgba(255,255,255,0.08);
+  gap: 12px;
+}
+.topbar-nav {
+  display: flex;
+  gap: 24px;
+  font-size: 13px;
+  color: rgba(232,230,224,0.45);
+}
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.stats-bar {
+  display: flex;
+  border-bottom: 0.5px solid rgba(255,255,255,0.08);
+}
+.stat-item {
+  flex: 1;
+  padding: 16px 32px;
+}
+.stat-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+}
+.columns-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.dashboard-padding {
+  padding: 24px 32px;
+}
+.consuming-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+/* everything tablet and below — iPad Pro, Air, Mini, phones all get the same treatment */
+@media (max-width: 1100px) {
+  .topbar {
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    gap: 10px;
+  }
+  .topbar-nav {
+    display: none;
+  }
+  .topbar-right {
+    gap: 8px;
+  }
+  .stats-bar {
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    flex: 1 1 40%;
+    padding: 14px 16px;
+    border-right: none !important;
+    border-bottom: 0.5px solid rgba(255,255,255,0.08);
+  }
+  .stat-value {
+    font-size: 28px;
+  }
+  .columns-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .dashboard-padding {
+    padding: 16px;
+  }
+  .consuming-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+/* phone — tighten up further */
+@media (max-width: 480px) {
+  .topbar {
+    padding: 12px;
+  }
+  .stat-item {
+    flex: 1 1 100%;
+  }
+  .stat-value {
+    font-size: 32px;
+  }
+}
+
+/* iPad Pro — large tablet, needs bigger text */
+@media (min-width: 1024px) and (max-width: 1100px) {
+  .stat-value {
+    font-size: 52px;
+  }
+  .stat-item {
+    padding: 35px 40px;
+  }
+}
+      `}</style>
+
       {/* top bar */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '18px 32px', borderBottom: '0.5px solid rgba(255,255,255,0.08)',
-      }}>
-        <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '20px', letterSpacing: '-0.5px' }}>
+      <div className="topbar">
+        <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '20px', letterSpacing: '-0.5px', flexShrink: 0 }}>
           scro<span style={{ color: 'var(--accent)' }}>lid</span>
         </div>
-        <nav style={{ display: 'flex', gap: '24px', fontSize: '13px', color: 'rgba(232,230,224,0.45)' }}>
+        <nav className="topbar-nav">
           <span style={{ color: '#e8e6e0' }}>dashboard</span>
           <span onClick={() => router.push('/stats')} style={{ cursor: 'pointer' }}>stats</span>
         </nav>
         <SearchBar />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div className="topbar-right">
           <ColorPicker />
-          
           <button
             onClick={() => setShowModal(true)}
             style={{
               background: 'var(--accent)', border: 'none', borderRadius: '6px',
               padding: '7px 14px', color: '#0d0d0f', fontWeight: 500,
-              fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit',
+              fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0,
             }}
           >
-            + add entry
+            + add
           </button>
           <ProfileDropdown name={session?.user?.name} email={session?.user?.email} />
         </div>
       </div>
 
       {/* stats bar */}
-      <div style={{ display: 'flex', borderBottom: '0.5px solid rgba(255,255,255,0.08)' }}>
+      <div className="stats-bar">
         {[
           { label: 'total tracked', value: entries.length, unit: 'titles' },
           { label: 'completed', value: totalCompleted, unit: 'titles' },
           { label: 'eps watched', value: totalEpisodes.toLocaleString(), unit: 'eps' },
           { label: 'chapters read', value: totalChapters.toLocaleString(), unit: 'ch' },
         ].map((stat, i) => (
-          <div key={i} style={{
-            flex: 1, padding: '16px 32px',
+          <div key={i} className="stat-item" style={{
             borderRight: i < 3 ? '0.5px solid rgba(255,255,255,0.08)' : 'none',
           }}>
             <div style={{ fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(232,230,224,0.35)', marginBottom: '4px' }}>
               {stat.label}
             </div>
-            <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '22px', fontWeight: 700 }}>
+            <div className="stat-value">
               {stat.value} <span style={{ fontSize: '12px', fontWeight: 400, color: 'rgba(232,230,224,0.4)', fontFamily: 'DM Sans, sans-serif' }}>{stat.unit}</span>
             </div>
           </div>
         ))}
       </div>
 
-      <div style={{ padding: '24px 32px' }}>
+      <div className="dashboard-padding">
         {/* now consuming */}
         {activeEntries.length > 0 && (
           <div style={{ marginBottom: '32px' }}>
             <div style={{ fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(232,230,224,0.35)', marginBottom: '14px' }}>
               now consuming
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '12px' }}>
+            <div className="consuming-grid">
               {activeEntries.map(entry => (
                 <div key={entry.id} style={{
                   background: '#161618', border: '0.5px solid rgba(255,255,255,0.08)',
@@ -239,7 +342,7 @@ const handleProgressUpdate = async (id: string, newProgress: number) => {
                 <option value="progress">by progress</option>
               </select>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+            <div className="columns-grid">
               {(['anime', 'manga', 'manhwa'] as EntryType[]).map(type => (
                 <EntryColumn
                   key={type}

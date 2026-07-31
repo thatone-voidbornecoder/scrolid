@@ -43,7 +43,7 @@ export default function LandingPage() {
       {/* hero */}
       <div style={{ textAlign: 'center', padding: '80px 32px 60px' }}>
         <div style={{ fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: '16px' }}>
-          your personal anime & manga tracker
+          your personal anime, manga, and manhwa tracker
         </div>
         <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '56px', fontWeight: 800, lineHeight: 1.05, marginBottom: '20px', letterSpacing: '-1px' }}>
           every arc,<br />accounted for.

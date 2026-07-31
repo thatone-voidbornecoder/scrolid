@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import sql from '@/lib/db';
 
+const DEMO_USER_ID = 'PASTE-YOUR-DEMO-UUID-HERE';
+
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth();
@@ -9,7 +11,18 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const users = await sql`SELECT id FROM users WHERE email = ${session.user.email}`;
+    const userId = users[0]?.id;
+    if (!userId) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+
     const { id } = await params;
+
+    // confirm this entry actually belongs to the logged-in user
+    const owned = await sql`SELECT id FROM entries WHERE id = ${id} AND user_id = ${userId}`;
+    if (owned.length === 0) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+
     const body = await request.json();
     const { title, type, status, cover_art, genres, description, english_title, season, current_progress, total_progress, priority, source, rewatch_count, format, duration } = body;
 
@@ -31,7 +44,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         format = COALESCE(${format}, format),
         duration = COALESCE(${duration}, duration),
         updated_at = now()
-      WHERE id = ${id}
+      WHERE id = ${id} AND user_id = ${userId}
       RETURNING *
     `;
 
@@ -48,8 +61,16 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const users = await sql`SELECT id FROM users WHERE email = ${session.user.email}`;
+    const userId = users[0]?.id;
+    if (!userId) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+
+    if (userId === DEMO_USER_ID) {
+      return NextResponse.json({ error: 'Demo account cannot delete entries' }, { status: 403 });
+    }
+
     const { id } = await params;
-    await sql`DELETE FROM entries WHERE id = ${id}`;
+    await sql`DELETE FROM entries WHERE id = ${id} AND user_id = ${userId}`;
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to delete entry' }, { status: 500 });
