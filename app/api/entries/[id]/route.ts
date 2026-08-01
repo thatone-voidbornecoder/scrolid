@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import sql from '@/lib/db';
 
-const DEMO_USER_ID = 'PASTE-YOUR-DEMO-UUID-HERE';
+const DEMO_USER_ID = '771655de-2d16-4ee8-b517-01c93d75447a';
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -65,9 +65,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     const userId = users[0]?.id;
     if (!userId) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-    if (userId === DEMO_USER_ID) {
-      return NextResponse.json({ error: 'Demo account cannot delete entries' }, { status: 403 });
-    }
 
     const { id } = await params;
     await sql`DELETE FROM entries WHERE id = ${id} AND user_id = ${userId}`;
